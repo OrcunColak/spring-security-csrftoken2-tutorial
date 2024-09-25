@@ -11,9 +11,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.csrf.CsrfTokenRepository;
-import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
 
 @Configuration
 @EnableWebSecurity
@@ -42,7 +39,12 @@ public class SecurityConfig {
                                 .anyRequest().authenticated()
                 )
                 .formLogin(Customizer.withDefaults())
-                .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()));
+                .csrf(csrf -> {
+                    // state-changing PUT, POST, DELETE requests work for this path
+                    csrf.ignoringRequestMatchers("/white");
+                    // By default, Spring Security stores the CSRF tokens in the HTTP session
+                    // csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
+                });
 
         return http.build();
     }
